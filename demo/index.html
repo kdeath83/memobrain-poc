@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemoBrain Demo — Executive Memory for Agentic Reasoning</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --panel: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --muted: #8b949e;
+            --accent: #58a6ff;
+            --accent2: #3fb950;
+            --warn: #d29922;
+            --danger: #f85149;
+            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            line-height: 1.5;
+        }
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        header h1 span {
+            color: var(--accent);
+        }
+        header .meta {
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+        }
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        .panel h2 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        input[type="text"], input[type="url"], input[type="number"] {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        input[type="text"]:focus, input[type="url"]:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem 1.2rem;
+            font-family: var(--font);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.85; }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .episodes {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .episode {
+            border-left: 3px solid var(--accent);
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+        .episode.calc { border-left-color: var(--accent2); }
+        .episode.search { border-left-color: var(--warn); }
+        .episode.answer { border-left-color: var(--accent2); }
+        .episode.think { border-left-color: var(--muted); }
+        .episode.error { border-left-color: var(--danger); }
+        .episode .badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            background: var(--bg);
+            margin-bottom: 0.3rem;
+        }
+        .episode .content {
+            font-size: 0.85rem;
+            color: var(--text);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .episode .result {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 0.3rem;
+            padding: 0.4rem;
+            background: var(--bg);
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .memory-graph {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--muted);
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .stat {
+            text-align: center;
+            padding: 0.8rem;
+            background: var(--bg);
+            border-radius: 6px;
+        }
+        .stat .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .stat .label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+        .config-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1rem;
+        }
+        .alert {
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+        .alert.info {
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+        .alert.warn {
+            background: rgba(210, 153, 34, 0.1);
+            border: 1px solid var(--warn);
+            color: var(--warn);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .final-answer {
+            background: rgba(63, 185, 80, 0.1);
+            border: 1px solid var(--accent2);
+            color: var(--accent2);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+        }
+        .footer a { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>🧠 <span>MemoBrain</span> Demo</h1>
+            <div class="meta">Executive Memory as an Agentic Brain for Reasoning</div>
+        </div>
+        <div class="meta">
+            <a href="https://arxiv.org/pdf/2601.08079" target="_blank">arXiv:2601.08079</a> ·
+            <a href="https://github.com/kdeath83/memobrain-poc" target="_blank">GitHub</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- LEFT: Input & Control -->
+        <div>
+            <div class="panel">
+                <h2>Task</h2>
+                <div class="alert info">
+                    Enter a reasoning task. The agent will use search, calculation, and Python tools to solve it step by step.
+                </div>
+                <label>Task</label>
+                <input type="text" id="taskInput"
+                    value="What is the capital of France, and what is its population multiplied by 2?"
+                    placeholder="e.g., What is the square root of the population of Tokyo?">
+
+                <div class="config-row">
+                    <div>
+                        <label>API Endpoint</label>
+                        <input type="url" id="apiUrl"
+                            value=""
+                            placeholder="https://xxx.execute-api.us-east-1.amazonaws.com/prod">
+                    </div>
+                    <div>
+                        <label>Max Episodes</label>
+                        <input type="number" id="maxEpisodes" value="10" min="1" max="50">
+                    </div>
+                </div>
+
+                <div class="alert warn" id="localModeAlert">
+                    No API endpoint set. The demo will run in <strong>mock mode</strong> using a fixed 4-step deterministic response.
+                    <br>Set your API endpoint above after deploying, or run the Python script locally.
+                </div>
+
+                <button id="runBtn" onclick="runTask()">▶ Run Agent</button>
+                <button class="secondary" onclick="clearAll()">Clear</button>
+            </div>
+
+            <div class="panel" style="margin-top: 1.5rem;">
+                <h2>Statistics</h2>
+                <div class="stats" id="statsPanel">
+                    <div class="stat"><div class="value" id="statEpisodes">0</div><div class="label">Episodes</div></div>
+                    <div class="stat"><div class="value" id="statThoughts">0</div><div class="label">Thoughts</div></div>
+                    <div class="stat"><div class="value" id="statFolds">0</div><div class="label">Folds</div></div>
+                    <div class="stat"><div class="value" id="statFlushes">0</div><div class="label">Flushes</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Output -->
+        <div>
+            <div class="panel">
+                <h2>Episodes</h2>
+                <div class="episodes" id="episodes"></div>
+                <div id="finalAnswer"></div>
+            </div>
+
+            <div class="panel" style="margin-top: 1.5rem;">
+                <h2>Memory Graph</h2>
+                <div class="memory-graph" id="memoryGraph">No episodes yet.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Based on <a href="https://arxiv.org/pdf/2601.08079" target="_blank">MemoBrain: Executive Memory as an Agentic Brain for Reasoning</a>
+        by Hongjin Qian & Zhao Cao ·
+        Inspired by <a href="https://www.linkedin.com/posts/joydeepbanerjee_ai-agenticai-share-7469252879984439296-ymIy/" target="_blank">Joydeep Banerjee</a>
+    </div>
+
+    <script>
+        const MOCK_EPISODES = [
+            { action: "SEARCH", content: "capital of France", result: "[Search] Paris is the capital of France." },
+            { action: "SEARCH", content: "population of Paris", result: "[Search] Paris population: approximately 2,160,000." },
+            { action: "CALCULATE", content: "2160000 * 2", result: "[Calculation] 2160000 * 2 = 4320000" },
+            { action: "ANSWER", content: "Paris is the capital of France. Its population (~2.16M) multiplied by 2 is 4,320,000.", result: "" }
+        ];
+
+        const MOCK_MEMORY = `[Thought T1] Confirmed Paris is the capital of France via search.
+[Thought T2] Retrieved Paris population: approximately 2,160,000.
+[Thought T3] Performed calculation: 2,160,000 x 2 = 4,320,000.
+[Thought T4] Recorded reasoning step.`;
+
+        const el = (id) => document.getElementById(id);
+
+        function clearAll() {
+            el('episodes').innerHTML = '';
+            el('memoryGraph').textContent = 'No episodes yet.';
+            el('finalAnswer').innerHTML = '';
+            el('statEpisodes').textContent = '0';
+            el('statThoughts').textContent = '0';
+            el('statFolds').textContent = '0';
+            el('statFlushes').textContent = '0';
+        }
+
+        function addEpisode(ep, idx) {
+            const div = document.createElement('div');
+            div.className = `episode ${ep.action.toLowerCase()}`;
+            div.innerHTML = `
+                <div class="badge">${ep.action} — Episode ${idx + 1}</div>
+                <div class="content">${escapeHtml(ep.content)}</div>
+                ${ep.result ? `<div class="result">${escapeHtml(ep.result)}</div>` : ''}
+            `;
+            el('episodes').appendChild(div);
+            el('episodes').scrollTop = el('episodes').scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function runMock() {
+            clearAll();
+            el('runBtn').disabled = true;
+            el('localModeAlert').style.display = 'block';
+
+            for (let i = 0; i < MOCK_EPISODES.length; i++) {
+                await sleep(600);
+                addEpisode(MOCK_EPISODES[i], i);
+                el('statEpisodes').textContent = i + 1;
+            }
+
+            await sleep(400);
+            el('memoryGraph').textContent = MOCK_MEMORY;
+            el('statThoughts').textContent = '4';
+            el('finalAnswer').innerHTML = `
+                <div class="final-answer">
+                    ✅ Final Answer: Paris is the capital of France. Its population (~2.16M) multiplied by 2 is 4,320,000.
+                </div>
+            `;
+            el('runBtn').disabled = false;
+        }
+
+        async function runLive() {
+            clearAll();
+            el('runBtn').disabled = true;
+            el('localModeAlert').style.display = 'none';
+
+            const url = el('apiUrl').value.replace(/\/$/, '') + '/solve';
+            const body = {
+                task: el('taskInput').value,
+                max_episodes: parseInt(el('maxEpisodes').value, 10)
+            };
+
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+                }
+
+                const data = await res.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Display answer
+                if (data.answer) {
+                    el('finalAnswer').innerHTML = `
+                        <div class="final-answer">✅ Final Answer: ${escapeHtml(data.answer)}</div>
+                    `;
+                }
+
+                // Display memory state
+                if (data.memory_state) {
+                    el('memoryGraph').textContent = data.memory_state;
+                }
+
+                // Display stats
+                if (data.stats) {
+                    el('statEpisodes').textContent = data.stats.thoughts_formed || '?';
+                    el('statThoughts').textContent = data.stats.thoughts_formed || '?';
+                    el('statFolds').textContent = data.stats.folded || '0';
+                    el('statFlushes').textContent = data.stats.flushed || '0';
+                }
+
+                // We don't have per-episode breakdown from the API, so show a single success episode
+                addEpisode({ action: 'ANSWER', content: data.answer || 'Task completed.', result: '' }, 0);
+
+            } catch (err) {
+                addEpisode({ action: 'ERROR', content: err.message, result: '' }, 0);
+            } finally {
+                el('runBtn').disabled = false;
+            }
+        }
+
+        function runTask() {
+            const apiUrl = el('apiUrl').value.trim();
+            if (apiUrl) {
+                runLive();
+            } else {
+                runMock();
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Check URL params for API endpoint
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('api')) {
+            el('apiUrl').value = params.get('api');
+            el('localModeAlert').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
