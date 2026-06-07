@@ -156,16 +156,6 @@ See [REVIEW.md](REVIEW.md) for a full security audit. Key findings:
 - **Search latency:** DuckDuckGo HTML scraping is ~1–3s and can fail on CAPTCHA. Tavily API is faster and more reliable.
 - **No caching:** Repeated searches are re-executed. Add a query cache for production.
 
-## Code Review Summary
-
-| Category | Score | Notes |
-|----------|-------|-------|
-| Security | C+ | Subprocess sandbox is good; regex pre-filter is bypassable |
-| Performance | C+ | LLM call amplification is the main concern |
-| Logic | B- | Core algorithm correct; dependency detection is fragile |
-| Architecture | B+ | Clean separation of concerns |
-
-See [REVIEW.md](REVIEW.md) for full details.
 
 ## Paper Citation
 
