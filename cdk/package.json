@@ -1,0 +1,21 @@
+{
+  "name": "memobrain-cdk",
+  "version": "1.0.0",
+  "description": "CDK deployment for MemoBrain PoC",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "deploy": "cdk deploy --require-approval never",
+    "synth": "cdk synth"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.17",
+    "typescript": "~5.8.3",
+    "aws-cdk": "2.181.2"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.181.2",
+    "constructs": "^10.4.2"
+  }
+}

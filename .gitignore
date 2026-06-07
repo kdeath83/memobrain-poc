@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# CDK
+cdk/node_modules/
+cdk/dist/
+cdk/cdk.out/
+cdk/*.js
+cdk/*.d.ts
+cdk/*.js.map
+.cdk.staging/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+
+# Environment
+.env
+.env.local
+
+# Lambda packaging
+lambda/package.zip
+
+# Logs
+*.log
