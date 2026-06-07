@@ -23,6 +23,25 @@ MemoBrain is an executive memory model for tool-augmented agents that constructs
 3. **Manages memory actively** — folds completed sub-trajectories and flushes obsolete thoughts to stay within a bounded context budget
 4. **Reorganizes context** — presents the agent with a compact, topologically-ordered reasoning backbone instead of a bloated transcript
 
+## Live Demo
+
+An interactive HTML demo is included in the repo. Open it locally or serve it via GitHub Pages:
+
+```bash
+# Clone and open locally
+git clone https://github.com/kdeath83/memobrain-poc.git
+cd memobrain-poc/demo
+open index.html        # macOS
+# or python3 -m http.server 8080 && open http://localhost:8080
+```
+
+**Features:**
+- Enter any reasoning task
+- Watch episodes unfold in real-time
+- View the memory graph and statistics
+- Connect to your deployed AWS API endpoint for live reasoning
+- Works offline in mock mode (deterministic 4-step demo)
+
 ## Architecture
 
 ```
@@ -48,6 +67,8 @@ Context Reorganization → Compact context Ct+1
 memobrain-poc/
 ├── memobrain.py          # Core implementation (v1 — original PoC)
 ├── memobrain_v2.py       # Enhanced version with real tool integrations
+├── demo/
+│   └── index.html          # Interactive HTML demo page
 ├── lambda/
 │   └── index.py            # AWS Lambda handler for serverless deployment
 ├── cdk/
@@ -59,6 +80,7 @@ memobrain-poc/
 │       └── stack.ts         # Infrastructure stack (Lambda + API Gateway)
 ├── README.md
 ├── REVIEW.md              # Security, performance, and logic review
+├── deploy.sh              # One-click deploy script
 └── .gitignore
 ```
 
